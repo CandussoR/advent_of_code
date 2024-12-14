@@ -32,22 +32,39 @@ int parse_line_tokens(char *line, int *arr)
 
 bool is_correctly_ordered(int *arr, int count, hashset_t *hashset)
 {
+	// Iterating from end to beginning of array
 	for (int i = count-1 ; i > 0 ; --i) {
+		// Each time we advance index, we are sure of the order of numbers at the end
 		for (int j = i - 1 ; j >= 0 ; --j) {
 			char needle[10];
 			sprintf(needle, "%d|%d\n", arr[i], arr[j]);
+			//printf("needle is %s", needle);
 			if (hs_get(hashset, needle))
-				return true;
+				//printf("found needle : %s", hs_get(hashset,needle));
+				//printf("is correctly ordered is... true ???");
+				return false;
 		}
 	}
-	return false;
+	//printf("is correctly order is false ?");
+	return true;
 }
 
 
 void part1(int *arr, int count, int *add, hashset_t *hashset) {
 	bool correct = is_correctly_ordered(arr, count, hashset);
-	if (!correct) {
+	if (correct) {
 		*add += arr[count/2];
+	}
+}
+
+void part2(int *arr, int count, int *add, hashset_t *hashset)
+{
+	for (int i = count-1 ; i > 0 ; --i) {
+		for (int j = i - 1 ; j >= 0 ; --j) {
+			char needle[10];
+			sprintf(needle, "%d|%d\n", arr[i], arr[j]);
+			printf("needle is %s\n", needle);
+		}
 	}
 }
 
@@ -70,12 +87,14 @@ int main()
 			++rules_len;	
 			continue;
 		}
+		printf("line is %s\n", line);
 		// Filling buffer with dynamic size with memset
 		int arr[strlen(line)];
 		memset(arr, -1, strlen(line)*sizeof(int));
 		// tokenize to get a number and the next
 		int count = parse_line_tokens(line, arr);
 		part1(arr, count, &correct_add, hashset);
+		part2(arr, count, &incorrect_add, hashset);
 		}
 
 	fprintf(stderr, "Added is %i\n", correct_add);
