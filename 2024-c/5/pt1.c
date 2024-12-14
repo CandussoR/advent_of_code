@@ -1,3 +1,4 @@
+#include "hashset.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -6,57 +7,77 @@
 
 int order_string(const void *a, const void *b)
 {
-	// thank you stack overflow but why does this work ??
-	//fprintf(stderr, "\tcomparing %s and %s, a is %s and b is %s, finding %i\n", (char *)a, (char *)b, a, b, strcmp(a,b));
 	return strcmp(a, b);
 	
 }
 
+int parse_line_tokens(char *line, int *arr)
+{
+	int token_count = 0;
+	// split line according to separators
+	char *token = strtok(line, ",\n");
+
+	while (token != NULL) {
+		// converts token into int and mutating the array
+		*arr = atoi(token);
+		++arr;
+		++token_count;
+		// continuing to tokenize the same string, must pass NULL
+		token = strtok(NULL, ",\n");
+	}
+
+	return token_count;
+}
+
+
+bool is_correctly_ordered(int *arr, int count, hashset_t *hashset)
+{
+	for (int i = count-1 ; i > 0 ; --i) {
+		for (int j = i - 1 ; j >= 0 ; --j) {
+			char needle[10];
+			sprintf(needle, "%d|%d\n", arr[i], arr[j]);
+			if (hs_get(hashset, needle))
+				return true;
+		}
+	}
+	return false;
+}
+
+
+void part1(int *arr, int count, int *add, hashset_t *hashset) {
+	bool correct = is_correctly_ordered(arr, count, hashset);
+	if (!correct) {
+		*add += arr[count/2];
+	}
+}
+
 int main()
 {
+	hashset_t *hashset = create_hashset();
 	char line[100];
-	char rules[1200][10];
 	int rules_len = 0;
-	int updates_len = 0;
 	bool is_rules = true;
+	int correct_add = 0;
+	int incorrect_add = 0;
 	while(fgets(line, 100, stdin)) {
 		if (is_rules) {
 			if (strcmp(line, "\n") == 0) {
 				is_rules = false;
-				/*
-				fprintf(stderr, "Printing the array before qsort\n");
-				for (int i = 0 ; i <= 5 ; ++i)
-					fprintf(stderr, "\t%s", rules[i]);
-				fprintf(stderr, "%li is sizeof *rules", sizeof(*rules));
-				*/
-				// Sorting to avoid searching the array all the time
-				qsort(rules, rules_len, sizeof (*rules), order_string);
-				fprintf(stderr, "After qsort : ");
-				for (int i = 0 ; i <= rules_len ; ++i)
-					fprintf(stderr, "\t%s", rules[i]);
 				continue;
 			} else {
-				/*line[strcspn(line, "\n")] = 0;*/
-				strncpy(rules[rules_len], line, sizeof(rules[0]));
+				hs_set(hashset, line);
 			}
 			++rules_len;	
 			continue;
 		}
-	}
+		// Filling buffer with dynamic size with memset
+		int arr[strlen(line)];
+		memset(arr, -1, strlen(line)*sizeof(int));
+		// tokenize to get a number and the next
+		int count = parse_line_tokens(line, arr);
+		part1(arr, count, &correct_add, hashset);
+		}
 
-	// for line
-	// begin at end of line
-	// tokenize to get a number and the next
-	// check if n|n-1 in rules
-	// 	if found break and move on to the next line
-	// 	if not found and strcomp > 0
-	// 		n = n-1
-	// 		tokenize new n
-	// if nothing is found
-	// 	get the middle number
-
-	fprintf(stderr, "Size of rules ? %li\n", sizeof(rules) * sizeof(rules[0]));
-	fprintf(stderr, "Rules : %i ; Updates : %i", rules_len, updates_len);
-
+	fprintf(stderr, "Added is %i\n", correct_add);
 	return 0;
 }
