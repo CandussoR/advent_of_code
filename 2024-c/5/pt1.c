@@ -8,7 +8,6 @@
 int order_string(const void *a, const void *b)
 {
 	return strcmp(a, b);
-	
 }
 
 int parse_line_tokens(char *line, int *arr)
@@ -32,23 +31,42 @@ int parse_line_tokens(char *line, int *arr)
 
 bool is_correctly_ordered(int *arr, int count, hashset_t *hashset)
 {
-	// Iterating from end to beginning of array
-	for (int i = count-1 ; i > 0 ; --i) {
-		// Each time we advance index, we are sure of the order of numbers at the end
-		for (int j = i - 1 ; j >= 0 ; --j) {
+	for (int i = 0 ; i < count ; ++i) {
+		for (int j = i + 1 ; j <= count ; ++j) {
 			char needle[10];
-			sprintf(needle, "%d|%d\n", arr[i], arr[j]);
-			//printf("needle is %s", needle);
+			sprintf(needle, "%d|%d\n", arr[j], arr[i]);
+			// if we found the value, then the rule exists
+			// and numbers should be the other way round
 			if (hs_get(hashset, needle))
-				//printf("found needle : %s", hs_get(hashset,needle));
-				//printf("is correctly ordered is... true ???");
 				return false;
 		}
 	}
-	//printf("is correctly order is false ?");
 	return true;
 }
 
+
+void order_array(int *arr, int count, int *add, hashset_t *hashset)
+{
+	// no for loop because we don't always increment i
+	int i = 0;
+	while (i < count) {
+		int j = i + 1;
+		while (j < count) {
+			char needle[10];
+			sprintf(needle, "%d|%d\n", arr[j], arr[i]);
+			// No rule against the order ? All good.
+			if (!hs_get(hashset, needle)) {
+				++j;
+				continue;
+			}
+			// else we swap and do iteration for new value of arr[i]
+			int tmp = arr[i];
+			arr[i] = arr[j];
+			arr[j] = tmp;
+		}
+		++i;
+	}
+}
 
 void part1(int *arr, int count, int *add, hashset_t *hashset) {
 	bool correct = is_correctly_ordered(arr, count, hashset);
@@ -59,13 +77,10 @@ void part1(int *arr, int count, int *add, hashset_t *hashset) {
 
 void part2(int *arr, int count, int *add, hashset_t *hashset)
 {
-	for (int i = count-1 ; i > 0 ; --i) {
-		for (int j = i - 1 ; j >= 0 ; --j) {
-			char needle[10];
-			sprintf(needle, "%d|%d\n", arr[i], arr[j]);
-			printf("needle is %s\n", needle);
-		}
-	}
+	if (is_correctly_ordered(arr, count, hashset))
+		return;
+	order_array(arr, count, add, hashset);
+	*add += arr[count/2];
 }
 
 int main()
@@ -87,7 +102,7 @@ int main()
 			++rules_len;	
 			continue;
 		}
-		printf("line is %s\n", line);
+		//printf("line is %s\n", line);
 		// Filling buffer with dynamic size with memset
 		int arr[strlen(line)];
 		memset(arr, -1, strlen(line)*sizeof(int));
@@ -97,6 +112,7 @@ int main()
 		part2(arr, count, &incorrect_add, hashset);
 		}
 
-	fprintf(stderr, "Added is %i\n", correct_add);
+	printf("Added is %i\n", correct_add);
+	printf("Added is %i\n", incorrect_add);
 	return 0;
 }
