@@ -102,7 +102,6 @@ int main()
 			++rules_len;	
 			continue;
 		}
-		//printf("line is %s\n", line);
 		// Filling buffer with dynamic size with memset
 		int arr[strlen(line)];
 		memset(arr, -1, strlen(line)*sizeof(int));
@@ -110,9 +109,12 @@ int main()
 		int count = parse_line_tokens(line, arr);
 		part1(arr, count, &correct_add, hashset);
 		part2(arr, count, &incorrect_add, hashset);
-		}
+	}
 
 	printf("Added is %i\n", correct_add);
 	printf("Added is %i\n", incorrect_add);
+
+	free_hashset(hashset);
+
 	return 0;
 }
