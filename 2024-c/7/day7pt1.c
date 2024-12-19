@@ -33,9 +33,13 @@ bool combine_op(long long int target, int *arr, int arr_len)
 	// Numbers of combinations = Numbers of choices (2)**(n-1).
 	int poss = pow(2, arr_len - 1);
 
+	// Think of choices as O or 1
+	// Exhausts all possibilities by switching bits
 	for (int i = 0; i < poss ; ++i) {
 		enum operation ops[arr_len - 1];
 		for (int j=0 ; j < arr_len - 1; ++j) {
+			// Still can't really wrap my head around this operation though
+			// got to make it clearer, quite handy
 			ops[j] = (enum operation) ((i >> j) & 1);
 		}
 		if (compute(target, arr, arr_len, ops)) {
