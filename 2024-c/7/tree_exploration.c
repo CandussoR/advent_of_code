@@ -63,15 +63,24 @@ void add_children(node_t *parent_node, node_t *child_node)
 	++parent_node->children_len;
 }
 
-void walk_tree(node_t *node)
+void walk_tree(node_t *node, int *path, int current_depth)
 {
+	if (!node) return;
+
+	path[current_depth] = node->operation;
+
 	printf("Walking the tree...\n");
 	if (node->children_len) {
 		for (int i = 0 ; i < node->children_len ; ++i)
-			walk_tree(node->children[i]);
+			walk_tree(node->children[i], path, current_depth+1);
 	}
 	else {
-		printf("Node operation is %i\n", node->operation);
+		printf("Path: ");
+		for (int i = 0; i <= current_depth; ++i) {
+			printf("%d ", path[i]);
+		}
+		printf("\n");
+		return;
 	}
 }
 
@@ -117,12 +126,14 @@ void release_tree(tree_t *tree)
 
 int main()
 {
+	int tree_depth = 2;
+	int path[tree_depth];
 	node_t *root = create_node(ADD);
 	printf("Node : %i, %li, %i\n", root->operation, sizeof(root->children), root->children_len);
 	tree_t *tree = create_tree(root);
 	printf("Tree created\n");
-	fill_tree(tree->root, 0, 2);
-	walk_tree(tree->root);
+	fill_tree(tree->root, 0, tree_depth);
+	walk_tree(tree->root, path, 0);
 	release_tree(tree);
 	return 0;
 }
